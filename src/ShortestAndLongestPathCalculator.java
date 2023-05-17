@@ -1,7 +1,7 @@
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class ShortestPathCalculator {
+public class ShortestAndLongestPathCalculator {
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_RESET = "\u001B[0m";
 
@@ -27,60 +27,45 @@ public class ShortestPathCalculator {
             graph.getAdjacencyList().get(u).stream()
                     .filter(edge -> !visited[edge.getDestination()])
                     .forEach(edge -> {
-                        int v = edge.getDestination();
-                        double weight = edge.getWeight();
-
-                        double newDistance = distance.get(u) + weight;
-                        if (newDistance < distance.get(v)) {
-                            distance.set(v, newDistance);
-                            previous[v] = u;
+                        if (distance.get(u) + edge.getWeight() < distance.get(edge.getDestination())) {
+                            distance.set(edge.getDestination(), distance.get(u) + edge.getWeight());
+                            previous[edge.getDestination()] = u;
                         }
                     });
         }
 
-        if(indexNames == null)
-            printInfoWithoutName(distance, source, previous, totalNodes);
-        else
-            printInfoWithName(distance, source, previous, totalNodes, indexNames);
+        printInfo(distance, source, previous, totalNodes, indexNames);
     }
 
-    static void longestPath(Graph graph, int source, int totalNodes, HashMap<Integer, String> indexNames) {
+    static void longestPathForDAG(Graph graph, int source, int totalNodes, HashMap<Integer, String> indexNames) {
         List<Double> distance = new ArrayList<>(Collections.nCopies(totalNodes, Double.NEGATIVE_INFINITY));
         distance.set(source, 0.0);
         int[] previous = new int[totalNodes];
         previous[source] = -1;
+
+        Stack<Integer> stack = new Stack<>();
         boolean[] visited = new boolean[totalNodes];
 
-        while (true) {
-            int u = IntStream.range(0, totalNodes)
-                    .filter(v -> !visited[v])
-                    .reduce((v1, v2) -> distance.get(v1) > distance.get(v2) ? v1 : v2)
-                    .orElse(-1);
-
-            if (u == -1) {
-                break; // All vertices visited
+        for (int i = 0; i < totalNodes; i++) {
+            if (!visited[i]) {
+                topologicalSorting(graph, i, visited, stack);
             }
-
-            visited[u] = true;
-
-            graph.getAdjacencyList().get(u).stream()
-                    .filter(edge -> !visited[edge.getDestination()])
-                    .forEach(edge -> {
-                        int v = edge.getDestination();
-                        double weight = edge.getWeight();
-
-                        double newDistance = distance.get(u) + weight;
-                        if (newDistance > distance.get(v)) {
-                            distance.set(v, newDistance);
-                            previous[v] = u;
-                        }
-                    });
         }
 
-        if(indexNames == null)
-            printInfoWithoutName(distance, source, previous, totalNodes);
-        else
-            printInfoWithName(distance, source, previous, totalNodes, indexNames);
+        while (!stack.isEmpty()) {
+            int currentNode = stack.pop();
+
+            if (distance.get(currentNode) != Double.NEGATIVE_INFINITY) {
+                for (Edge edge : graph.adjacencyList.get(currentNode)) {
+                    if (distance.get(currentNode) + edge.getWeight() > distance.get(edge.getDestination())) {
+                        distance.set(edge.getDestination(), distance.get(currentNode) + edge.getWeight());
+                        previous[edge.getDestination()] = currentNode;
+                    }
+                }
+            }
+        }
+
+        printInfo(distance, source, previous, totalNodes, indexNames);
     }
 
     private static void topologicalSorting(Graph graph, int nodeNum, boolean[] visited, Stack<Integer> ordering) {
@@ -121,6 +106,10 @@ public class ShortestPathCalculator {
             }
         }
 
+        printInfo(distance, source, previous, totalNodes, indexNames);
+    }
+
+    private static void printInfo(List<Double> distance, int source, int[] previous, int totalNodes, HashMap<Integer, String> indexNames){
         if (indexNames == null)
             printInfoWithoutName(distance, source, previous, totalNodes);
         else
@@ -128,30 +117,29 @@ public class ShortestPathCalculator {
     }
 
     private static void printInfoWithoutName(List<Double> distance, int source, int[] previous, int allNodes) {
-        System.out.format(ANSI_GREEN + "%15s%15s%15s%15s", "Source", "Destination", "Min Cost", "Route\n" + ANSI_RESET);
+        System.out.format(ANSI_GREEN + "%15s%15s%15s%15s", "Source", "Destination", "Cost", "Route\n" + ANSI_RESET);
 
         IntStream.range(0, allNodes)
                 .forEach(i -> {
                     System.out.format("%15s%15s%15s", source, i, distance.get(i));
                     System.out.print("\t\t");
-                    if(distance.get(i) == Double.POSITIVE_INFINITY)
+                    if (distance.get(i) == Double.POSITIVE_INFINITY || distance.get(i) == Double.NEGATIVE_INFINITY)
                         System.out.println("-");
                     else {
                         printRouteWithoutNames(previous, i);
                         System.out.println();
                     }
-
                 });
     }
 
     private static void printInfoWithName(List<Double> distance, int source, int[] previous, int allNodes, HashMap<Integer, String> indexNames) {
-        System.out.format(ANSI_GREEN + "%15s%15s%15s%17s", "Source", "Destination", "Min Cost", "Route\n" + ANSI_RESET);
+        System.out.format(ANSI_GREEN + "%15s%15s%15s%17s", "Source", "Destination", "Cost", "Route\n" + ANSI_RESET);
 
         IntStream.range(0, allNodes)
                 .forEach(i -> {
                     System.out.format("%15s%15s%15s", indexNames.get(source), indexNames.get(i), distance.get(i));
                     System.out.print("\t\t");
-                    if(distance.get(i) == Double.POSITIVE_INFINITY)
+                    if (distance.get(i) == Double.POSITIVE_INFINITY || distance.get(i) == Double.NEGATIVE_INFINITY)
                         System.out.println("-");
                     else {
                         printRouteWithNames(previous, i, indexNames);

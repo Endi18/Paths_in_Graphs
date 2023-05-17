@@ -21,16 +21,14 @@ public class Main {
             if (graph.isDAG(totalNodes)) {
                 System.out.println(ANSI_ORANGE + "* * * * * * * * * * The Graph is a DAG * * * * * * * * * *" + ANSI_RESET);
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Shortest Path---!>" + ANSI_RESET);
-                ShortestPathCalculator.shortestPathForDAG(graph, startingNode, totalNodes, fm.getIndexWithName());
+                ShortestAndLongestPathCalculator.shortestPathForDAG(graph, startingNode, totalNodes, fm.getIndexWithName());
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Longest Path---!>" + ANSI_RESET);
-
+                ShortestAndLongestPathCalculator.longestPathForDAG(graph, startingNode, totalNodes, fm.getIndexWithName());
             } else {
                 System.out.println(ANSI_ORANGE + "* * * * * * * * * The Graph is NOT a DAG * * * * * * * * *" + ANSI_RESET);
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Shortest Path---!>" + ANSI_RESET);
-                ShortestPathCalculator.DijkstraAlgorithm(graph, startingNode, totalNodes, fm.getIndexWithName());
+                ShortestAndLongestPathCalculator.DijkstraAlgorithm(graph, startingNode, totalNodes, fm.getIndexWithName());
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Longest Path---!>" + ANSI_RESET);
-                ShortestPathCalculator.longestPath(graph, startingNode, totalNodes, fm.getIndexWithName());
-
             }
         } else
             System.out.println("The Inputs Does Not Meet the Requirements");

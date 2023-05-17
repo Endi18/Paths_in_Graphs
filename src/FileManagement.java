@@ -54,7 +54,7 @@ public class FileManagement {
     }
 
     public void readFile() {
-        try (Stream<String> lines = Files.lines(Paths.get(".", "src", "graph.txt"))) {
+        try (Stream<String> lines = Files.lines(Paths.get(".", "src", "graph1.txt"))) {
             AtomicInteger lineCount = new AtomicInteger(1);
 
             lines.forEach(line -> {

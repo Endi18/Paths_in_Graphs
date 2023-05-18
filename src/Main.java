@@ -29,6 +29,7 @@ public class Main {
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Shortest Path---!>" + ANSI_RESET);
                 ShortestAndLongestPathCalculator.DijkstraAlgorithm(graph, startingNode, totalNodes, fm.getIndexWithName());
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Longest Path---!>" + ANSI_RESET);
+                ShortestAndLongestPathCalculator.longestPathForNonDAG(graph, startingNode, totalNodes, fm.getIndexWithName());
             }
         } else
             System.out.println("The Inputs Does Not Meet the Requirements");

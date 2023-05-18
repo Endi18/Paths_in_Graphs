@@ -8,8 +8,10 @@ public class ShortestAndLongestPathCalculator {
     public static void DijkstraAlgorithm(Graph graph, int source, int totalNodes, HashMap<Integer, String> indexNames) {
         List<Double> distance = new ArrayList<>(Collections.nCopies(totalNodes, Double.POSITIVE_INFINITY));
         distance.set(source, 0.0);
+
         int[] previous = new int[totalNodes];
         previous[source] = -1;
+
         boolean[] visited = new boolean[totalNodes];
 
         while (true) {
@@ -34,47 +36,83 @@ public class ShortestAndLongestPathCalculator {
                     });
         }
 
-        printInfo(distance, source, previous, totalNodes, indexNames);
+        printInformation(distance, source, previous, totalNodes, indexNames);
+    }
+
+    public static void longestPathForNonDAG(Graph graph, int source, int totalNodes, HashMap<Integer, String> indexNames){
+        List<Double> distance = new ArrayList<>(Collections.nCopies(totalNodes, Double.NEGATIVE_INFINITY));
+        distance.set(source, 0.0);
+
+        int[] previous = new int[totalNodes];
+        previous[source] = -1;
+
+        boolean[] visited = new boolean[totalNodes];
+
+        while (true) {
+            int u = IntStream.range(0, totalNodes)
+                    .filter(v -> !visited[v])
+                    .reduce((v1, v2) -> distance.get(v1) > distance.get(v2) ? v1 : v2)
+                    .orElse(-1);
+
+            if (u == -1) {
+                break; // All vertices visited
+            }
+
+            visited[u] = true;
+
+            graph.getAdjacencyList().get(u).stream()
+                    .filter(edge -> !visited[edge.getDestination()])
+                    .forEach(edge -> {
+                        if (distance.get(u) + edge.getWeight() > distance.get(edge.getDestination())) {
+                            distance.set(edge.getDestination(), distance.get(u) + edge.getWeight());
+                            previous[edge.getDestination()] = u;
+                        }
+                    });
+        }
+
+        printInformation(distance, source, previous, totalNodes, indexNames);
     }
 
     static void longestPathForDAG(Graph graph, int source, int totalNodes, HashMap<Integer, String> indexNames) {
         List<Double> distance = new ArrayList<>(Collections.nCopies(totalNodes, Double.NEGATIVE_INFINITY));
         distance.set(source, 0.0);
+
         int[] previous = new int[totalNodes];
         previous[source] = -1;
 
         Stack<Integer> stack = new Stack<>();
         boolean[] visited = new boolean[totalNodes];
 
-        for (int i = 0; i < totalNodes; i++) {
-            if (!visited[i]) {
-                topologicalSorting(graph, i, visited, stack);
-            }
-        }
+        IntStream.range(0, totalNodes)
+                .filter(i -> !visited[i])
+                .forEach(i -> topologicalSorting(graph, i, visited, stack));
+
 
         while (!stack.isEmpty()) {
             int currentNode = stack.pop();
 
             if (distance.get(currentNode) != Double.NEGATIVE_INFINITY) {
-                for (Edge edge : graph.adjacencyList.get(currentNode)) {
-                    if (distance.get(currentNode) + edge.getWeight() > distance.get(edge.getDestination())) {
-                        distance.set(edge.getDestination(), distance.get(currentNode) + edge.getWeight());
-                        previous[edge.getDestination()] = currentNode;
-                    }
-                }
+                graph.adjacencyList.get(currentNode)
+                        .forEach(edge -> {
+                            int destination = edge.getDestination();
+                            if (distance.get(currentNode) + edge.getWeight() > distance.get(destination)) {
+                                distance.set(destination, distance.get(currentNode) + edge.getWeight());
+                                previous[destination] = currentNode;
+                            }
+                        });
             }
         }
 
-        printInfo(distance, source, previous, totalNodes, indexNames);
+        printInformation(distance, source, previous, totalNodes, indexNames);
     }
 
     private static void topologicalSorting(Graph graph, int nodeNum, boolean[] visited, Stack<Integer> ordering) {
         visited[nodeNum] = true;
-        for (Edge edge : graph.adjacencyList.get(nodeNum)) {
-            if (!visited[edge.getDestination()]) {
-                topologicalSorting(graph, edge.getDestination(), visited, ordering);
-            }
-        }
+
+        graph.adjacencyList.get(nodeNum).stream()
+                .filter(edge -> !visited[edge.getDestination()])
+                .forEach(edge -> topologicalSorting(graph, edge.getDestination(), visited, ordering));
+
         ordering.push(nodeNum);
     }
 
@@ -88,6 +126,7 @@ public class ShortestAndLongestPathCalculator {
 
         List<Double> distance = new ArrayList<>(Collections.nCopies(totalNodes, Double.POSITIVE_INFINITY));
         distance.set(source, 0.0);
+
         int[] previous = new int[totalNodes];
         previous[source] = -1;
 
@@ -96,27 +135,25 @@ public class ShortestAndLongestPathCalculator {
 
             if (distance.get(node) != Double.POSITIVE_INFINITY) {
                 graph.adjacencyList.get(node).forEach(edge -> {
-                    int destinationNode = edge.getDestination();
-                    double weight = edge.getWeight();
-                    if ((distance.get(node) + weight) < distance.get(destinationNode)) {
-                        distance.set(destinationNode, distance.get(node) + weight);
-                        previous[destinationNode] = node;
+                    if ((distance.get(node) + edge.getWeight()) < distance.get(edge.getDestination())) {
+                        distance.set(edge.getDestination(), distance.get(node) + edge.getWeight());
+                        previous[edge.getDestination()] = node;
                     }
                 });
             }
         }
 
-        printInfo(distance, source, previous, totalNodes, indexNames);
+        printInformation(distance, source, previous, totalNodes, indexNames);
     }
 
-    private static void printInfo(List<Double> distance, int source, int[] previous, int totalNodes, HashMap<Integer, String> indexNames){
+    private static void printInformation(List<Double> distance, int source, int[] previous, int totalNodes, HashMap<Integer, String> indexNames){
         if (indexNames == null)
-            printInfoWithoutName(distance, source, previous, totalNodes);
+            printInformationWithoutName(distance, source, previous, totalNodes);
         else
-            printInfoWithName(distance, source, previous, totalNodes, indexNames);
+            printInformationWithName(distance, source, previous, totalNodes, indexNames);
     }
 
-    private static void printInfoWithoutName(List<Double> distance, int source, int[] previous, int allNodes) {
+    private static void printInformationWithoutName(List<Double> distance, int source, int[] previous, int allNodes) {
         System.out.format(ANSI_GREEN + "%15s%15s%15s%15s", "Source", "Destination", "Cost", "Route\n" + ANSI_RESET);
 
         IntStream.range(0, allNodes)
@@ -132,7 +169,7 @@ public class ShortestAndLongestPathCalculator {
                 });
     }
 
-    private static void printInfoWithName(List<Double> distance, int source, int[] previous, int allNodes, HashMap<Integer, String> indexNames) {
+    private static void printInformationWithName(List<Double> distance, int source, int[] previous, int allNodes, HashMap<Integer, String> indexNames) {
         System.out.format(ANSI_GREEN + "%15s%15s%15s%17s", "Source", "Destination", "Cost", "Route\n" + ANSI_RESET);
 
         IntStream.range(0, allNodes)

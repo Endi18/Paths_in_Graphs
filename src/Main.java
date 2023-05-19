@@ -7,29 +7,33 @@ public class Main {
 
     public static void main(String[] args) {
 
-        FileManagement fm = new FileManagement();
+        FileManagement fm = new FileManagement(0);
+        FileManagement fmNegative = new FileManagement(1);
+
 
         if (fm.isInputValidation()) {
             List<Edge> listOfEdges = fm.getListOfEdges();
+            System.out.println();
             int totalNodes = fm.getTotalNodes();
             int startingNode = fm.getStartingNode();
 
             // construct graph
             Graph graph = new Graph(listOfEdges, totalNodes);
+            Graph negativeGraph = new Graph(fmNegative.getListOfEdges(), fmNegative.getTotalNodes());
 
             // check if the given directed graph is DAG or not
-            if (graph.isDAG(totalNodes)) {
+            if (graph.isDAG()) {
                 System.out.println(ANSI_ORANGE + "* * * * * * * * * * The Graph is a DAG * * * * * * * * * *" + ANSI_RESET);
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Shortest Path---!>" + ANSI_RESET);
-                ShortestAndLongestPathCalculator.shortestPathForDAG(graph, startingNode, totalNodes, fm.getIndexWithName());
+                ShortestAndLongestPathCalculator.shortestAndLongestPathForDAG(graph, startingNode, totalNodes, fm.getIndexWithName(), 0);
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Longest Path---!>" + ANSI_RESET);
-                ShortestAndLongestPathCalculator.longestPathForDAG(graph, startingNode, totalNodes, fm.getIndexWithName());
+                ShortestAndLongestPathCalculator.shortestAndLongestPathForDAG(graph, startingNode, totalNodes, fm.getIndexWithName(), 1);
             } else {
                 System.out.println(ANSI_ORANGE + "* * * * * * * * * The Graph is NOT a DAG * * * * * * * * *" + ANSI_RESET);
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Shortest Path---!>" + ANSI_RESET);
-                ShortestAndLongestPathCalculator.DijkstraAlgorithm(graph, startingNode, totalNodes, fm.getIndexWithName());
+                ShortestAndLongestPathCalculator.DijkstraAlgorithm(graph, startingNode, fm.getIndexWithName());
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Longest Path---!>" + ANSI_RESET);
-                ShortestAndLongestPathCalculator.longestPathForNonDAG(graph, startingNode, totalNodes, fm.getIndexWithName());
+                ShortestAndLongestPathCalculator.longestPathForNonDAG(graph, startingNode, fm.getIndexWithName());
             }
         } else
             System.out.println("The Inputs Does Not Meet the Requirements");

@@ -5,42 +5,65 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Graph {
-    List<List<Edge>> adjacencyList;
+    private List<List<Edge>> adjacencyList;
+    private int allVertices;
 
-    public Graph(List<Edge> listOfEdges, int number) {
-        adjacencyList = IntStream.range(0, number)
+    public Graph(List<Edge> adjacencyList, int allVertices) {
+        setAllVertices(allVertices);
+        setAdjacencyList(IntStream.range(0, getAllVertices())
                 .mapToObj(i -> new ArrayList<Edge>())
-                .collect(Collectors.toCollection(() -> new ArrayList<>(number)));
+                .collect(Collectors.toCollection(() -> new ArrayList<>(getAllVertices()))));
 
-        Objects.requireNonNull(listOfEdges).forEach(edge -> adjacencyList.get(edge.getSource()).add(edge));
+        Objects.requireNonNull(adjacencyList).forEach(edge -> getAdjacencyList().get(edge.getSource()).add(edge));
     }
 
-    private boolean isCyclic(int nodeNumber, boolean[] visited, boolean[] recursionStack) {
-        visited[nodeNumber] = true;
-        recursionStack[nodeNumber] = true;
+    public boolean isDAG() {
+        boolean[] visited = new boolean[adjacencyList.size()];
+        boolean[] recursionStack = new boolean[adjacencyList.size()];
 
-        return adjacencyList.get(nodeNumber).stream()
-                .map(Edge::getDestination)
-                .anyMatch(neighbor -> {
-                    if (!visited[neighbor]) {
-                        return isCyclic(neighbor, visited, recursionStack);
-                    } else {
-                        return recursionStack[neighbor];
-                    }
-                });
+        for (int i = 0; i < adjacencyList.size(); i++) {
+            if (!visited[i]) {
+                if (isCyclic(i, visited, recursionStack)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
-    public boolean isDAG(int totalNodes) {
-        boolean[] visited = new boolean[totalNodes];
-        boolean[] recursionStack = new boolean[totalNodes];
+    private boolean isCyclic(int node, boolean[] visited, boolean[] recursionStack) {
+        visited[node] = true;
+        recursionStack[node] = true;
 
-        return IntStream.range(0, totalNodes)
-                .filter(i -> !visited[i] && isCyclic(i, visited, recursionStack))
-                .findFirst()
-                .isEmpty();
+        for (Edge edge : adjacencyList.get(node)) {
+            if (!visited[edge.getDestination()]) {
+                if (isCyclic(edge.getDestination(), visited, recursionStack)) {
+                    return true;
+                }
+            } else if (recursionStack[edge.getDestination()]) {
+                return true;
+            }
+        }
+
+        recursionStack[node] = false;
+        return false;
     }
 
     public List<List<Edge>> getAdjacencyList() {
         return adjacencyList;
     }
+
+    public void setAdjacencyList(List<List<Edge>> adjacencyList) {
+        this.adjacencyList = adjacencyList;
+    }
+
+    public int getAllVertices() {
+        return allVertices;
+    }
+
+    public void setAllVertices(int allVertices) {
+        this.allVertices = allVertices;
+    }
+
 }

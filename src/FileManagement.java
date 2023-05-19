@@ -36,9 +36,9 @@ public class FileManagement {
         this.startingNode = startingNode;
     }
 
-    FileManagement(){
+    FileManagement(int number){
         listOfEdges = new ArrayList<>();
-        readFile();
+        readFile(number);
     }
 
     public List<Edge> getListOfEdges() {
@@ -53,7 +53,7 @@ public class FileManagement {
         this.totalNodes = totalNodes;
     }
 
-    public void readFile() {
+    public void readFile(int number) {
         try (Stream<String> lines = Files.lines(Paths.get(".", "src", "graph.txt"))) {
             AtomicInteger lineCount = new AtomicInteger(1);
 
@@ -76,8 +76,15 @@ public class FileManagement {
                         }
                     }
                     case 3 -> setStartingNode(Integer.parseInt(parts[0]));
-                    default ->
+                    default -> {
+                        if (number == 0) {
                             listOfEdges.add(new Edge(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Double.parseDouble(parts[2])));
+                        } else if (number == 1) {
+                            Edge edge = new Edge(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), (Double.parseDouble(parts[2]) * -1.00));
+                            listOfEdges.add(edge);
+                            System.out.println("EDGE WEIGHT " + edge.getWeight());
+                        }
+                    }
                 }
             });
         } catch (IOException e) {

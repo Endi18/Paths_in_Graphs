@@ -7,9 +7,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        FileManagement fm = new FileManagement(0);
-        FileManagement fmNegative = new FileManagement(1);
-
+        FileManagement fm = new FileManagement();
 
         if (fm.isInputValidation()) {
             List<Edge> listOfEdges = fm.getListOfEdges();
@@ -17,11 +15,8 @@ public class Main {
             int totalNodes = fm.getTotalNodes();
             int startingNode = fm.getStartingNode();
 
-            // construct graph
             Graph graph = new Graph(listOfEdges, totalNodes);
-            Graph negativeGraph = new Graph(fmNegative.getListOfEdges(), fmNegative.getTotalNodes());
 
-            // check if the given directed graph is DAG or not
             if (graph.isDAG()) {
                 System.out.println(ANSI_ORANGE + "* * * * * * * * * * The Graph is a DAG * * * * * * * * * *" + ANSI_RESET);
                 System.out.println(ANSI_CYAN + "\n\t\t\t\t\t<!---Shortest Path---!>" + ANSI_RESET);

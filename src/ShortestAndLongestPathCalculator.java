@@ -119,7 +119,6 @@ public class ShortestAndLongestPathCalculator {
         while (!ordering.isEmpty()) {
             int currentVertex = ordering.pop();
 
-
             if (distance.get(currentVertex) != Double.NEGATIVE_INFINITY) {
                 graph.getAdjacencyList().get(currentVertex)
                         .forEach(edge -> {

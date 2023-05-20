@@ -6,7 +6,7 @@ public class ShortestAndLongestPathCalculator {
     public static final String ANSI_RESET = "\u001B[0m";
 
     public static void DijkstraAlgorithm(Graph graph, int source, HashMap<Integer, String> indexNames) {
-        PriorityQueue<Vertex> priorityQueue = new PriorityQueue<>(Comparator.comparingDouble(vertex -> vertex.distance));
+        PriorityQueue<Vertex> priorityQueue = new PriorityQueue<>(Comparator.comparingDouble(Vertex::getDistance));
         
         List<Double> distance = new ArrayList<>(Collections.nCopies(graph.getAllVertices(), Double.POSITIVE_INFINITY));
         int[] previous = new int[graph.getAllVertices()];
@@ -19,9 +19,9 @@ public class ShortestAndLongestPathCalculator {
         while (!priorityQueue.isEmpty()) {
             Vertex currentVertex = priorityQueue.poll();
 
-            int vertexIndexOfCurrentVertex = currentVertex.vertexIndex;
+            int vertexIndexOfCurrentVertex = currentVertex.getVertexIndex();
 
-            if (currentVertex.distance > distance.get(vertexIndexOfCurrentVertex)) continue;
+            if (currentVertex.getDistance() > distance.get(vertexIndexOfCurrentVertex)) continue;
 
             for (Edge edge : graph.getAdjacencyList().get(vertexIndexOfCurrentVertex)) {
                 int destinationVertex = edge.getDestination();
@@ -48,24 +48,26 @@ public class ShortestAndLongestPathCalculator {
 
         boolean[] visited = new boolean[graph.getAllVertices()];
 
-        while (true) {
-            int u = IntStream.range(0, graph.getAllVertices())
-                    .filter(v -> !visited[v])
-                    .reduce((v1, v2) -> distance.get(v1) > distance.get(v2) ? v1 : v2)
-                    .orElse(-1);
+        PriorityQueue<Vertex> queue = new PriorityQueue<>(Comparator.comparingDouble(Vertex::getDistance).reversed());
 
-            if (u == -1) {
-                break; // All vertices visited
+        queue.add(new Vertex(source, 0.0));
+
+        while (!queue.isEmpty()) {
+            Vertex u = queue.poll();
+
+            if (visited[u.getVertexIndex()]) {
+                continue;
             }
 
-            visited[u] = true;
+            visited[u.getVertexIndex()] = true;
 
-            graph.getAdjacencyList().get(u).stream()
+            graph.getAdjacencyList().get(u.getVertexIndex()).stream()
                     .filter(edge -> !visited[edge.getDestination()])
                     .forEach(edge -> {
-                        if (distance.get(u) + edge.getWeight() > distance.get(edge.getDestination())) {
-                            distance.set(edge.getDestination(), distance.get(u) + edge.getWeight());
-                            previous[edge.getDestination()] = u;
+                        if (distance.get(u.getVertexIndex()) + edge.getWeight() > distance.get(edge.getDestination())) {
+                            distance.set(edge.getDestination(), distance.get(u.getVertexIndex()) + edge.getWeight());
+                            previous[edge.getDestination()] = u.getVertexIndex();
+                            queue.add(new Vertex (edge.getDestination(), distance.get(u.getVertexIndex()) + edge.getWeight()));
                         }
                     });
         }
@@ -143,7 +145,6 @@ public class ShortestAndLongestPathCalculator {
 
         ordering.push(vertexIndex);
     }
-
 
     private static void printInformation(List<Double> distance, int source, int[] previous, int allVertices, HashMap<Integer, String> indexNames){
         if (indexNames == null)

@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 public class FileManagement {
     private final List<Edge> listOfEdges;
-    private int totalNodes;
+    private int allVertices;
 
     private HashMap<Integer, String> indexWithName = new HashMap<>();
     private boolean inputValidation;
@@ -45,16 +45,16 @@ public class FileManagement {
         return listOfEdges;
     }
 
-    public int getTotalNodes() {
-        return totalNodes;
+    public int getAllVertices() {
+        return allVertices;
     }
 
-    public void setTotalNodes(int totalNodes) {
-        this.totalNodes = totalNodes;
+    public void setAllVertices(int allVertices) {
+        this.allVertices = allVertices;
     }
 
     public void readFile() {
-        try (Stream<String> lines = Files.lines(Paths.get(".", "src", "graph1.txt"))) {
+        try (Stream<String> lines = Files.lines(Paths.get(".", "src", "graph.txt"))) {
             AtomicInteger lineCount = new AtomicInteger(1);
 
             lines.forEach(line -> {
@@ -63,14 +63,14 @@ public class FileManagement {
                     case 1 -> {
                         if (validateInputs(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]))) {
                             setInputValidation(true);
-                            setTotalNodes(Integer.parseInt(parts[0]));
+                            setAllVertices(Integer.parseInt(parts[0]));
                         } else {
                             setInputValidation(false);
                         }
                     }
                     case 2 -> {
                         if (parts.length > 1) {
-                            IntStream.range(0, getTotalNodes()).forEach(i -> indexWithName.put(i, parts[i]));
+                            IntStream.range(0, getAllVertices()).forEach(i -> indexWithName.put(i, parts[i]));
                         } else if (parts[0].equals("use-indexes")) {
                             indexWithName = null;
                         }

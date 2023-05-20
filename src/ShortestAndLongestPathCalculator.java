@@ -7,7 +7,7 @@ public class ShortestAndLongestPathCalculator {
 
     public static void DijkstraAlgorithm(Graph graph, int source, HashMap<Integer, String> indexNames) {
         PriorityQueue<Vertex> priorityQueue = new PriorityQueue<>(Comparator.comparingDouble(Vertex::getDistance));
-        
+
         List<Double> distance = new ArrayList<>(Collections.nCopies(graph.getAllVertices(), Double.POSITIVE_INFINITY));
         int[] previous = new int[graph.getAllVertices()];
 
@@ -133,7 +133,6 @@ public class ShortestAndLongestPathCalculator {
             }
         }
         printInformation(distance, source, previous, graph.getAllVertices(), indexNames);
-
     }
 
     private static void topologicalSorting(Graph graph, int vertexIndex, boolean[] visited, Stack<Integer> ordering) {
